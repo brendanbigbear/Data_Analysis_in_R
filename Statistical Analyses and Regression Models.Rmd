@@ -1,0 +1,150 @@
+---
+title: "Statistical Analyses and Regression Models"
+author: "Sungwook Park"
+date: "2023-06-07"
+output:
+  word_document: default
+  html_document: default
+---
+Exploratory Data Analysis and Statistical Tests for Stock Returns
+#Linear Regression Analysis for Pfizer and AmerExp
+```{r}
+data <- read.table("d_logret_6stocks.txt", header = TRUE)
+model <- lm(Pfizer ~ AmerExp, data = data)
+coefficients <- coef(model)
+print(coefficients)
+
+```
+#Analysis of Variance (ANOVA) for the Linear Model
+```{r}
+anova_table <- anova(model)
+print(anova_table)
+```
+#Correlation Analysis between Pfizer and AmerExp Returns
+```{r}
+correlation <- cor(data$Pfizer, data$AmerExp)
+
+cor_test <- cor.test(data$Pfizer, data$AmerExp)
+
+print(correlation)
+print(cor_test)
+```
+#Proportion Test for Returns Comparison
+```{r}
+
+returns_AmerExp <- data$AmerExp
+returns_Intel <- data$Intel
+
+prop_test <- prop.test(sum(returns_AmerExp > returns_Intel), length(returns_AmerExp))
+
+print(prop_test)
+```
+#Analysis of Variance (ANOVA) for Multiple Returns Groups
+```{r}
+returns_Exxon <- data$Exxon
+returns_AmerExp <- data$AmerExp
+returns_Pfizer <- data$Pfizer
+
+returns_data <- data.frame(Group = c(rep("Group 1", length(returns_Exxon)), rep("Group 2", length(returns_AmerExp)), rep("Group 3", length(returns_Pfizer))),
+                           Returns = c(returns_Exxon, returns_AmerExp, returns_Pfizer))
+anova_result <- aov(Returns ~ Group, data = returns_data)
+print(summary(anova_result))
+
+```
+
+
+
+
+Exploring Regression Models and Variable Selection for Cement Data
+#Linear Regression Model for Cement Data
+```{r}
+library(MASS)
+
+data(cement, package = "MASS")
+
+model <- lm(y ~ x1 + x2 + x3 + x4 - 1, data = cement)
+
+coefficients <- coef(model)
+
+print(coefficients)
+
+```
+#Calculating Adjusted R-Squared
+```{r}
+adjusted_r_squared <- summary(model)$adj.r.squared
+
+print(adjusted_r_squared)
+```
+#Identifying Best Subset Regression Model
+```{r}
+library(leaps)
+
+best_subset <- regsubsets(y ~ x1 + x2 + x3 + x4, data = cement, nbest = 1, nvmax = 2, method = "exhaustive")
+
+best_model <- summary(best_subset)
+
+print(best_model)
+
+#the best model with 2 independent variable is x1 and x2
+```
+
+
+
+Analyzing Data Sets with Normality Tests, Homogeneity Test, and One-Way ANOVA
+#Assessing Normality of Data Sets
+```{r}
+tredecula <- c(0.09, 0.17, 0.19, 0.16, 0.27, 0.15, 0.25, 0.16, 0.14)
+tredecassini <- c(0.28, 0.15, 0.22, 0.11, 0.20, 0.17, 0.23, 0.18, 0.23)
+tredecim <- c(0.28, 0.29, 0.14, 0.18, 0.32, 0.39, 0.33, 0.26, 0.12)
+
+shapiro.test(tredecula)$p.value >= 0.1
+shapiro.test(tredecassini)$p.value >= 0.1
+shapiro.test(tredecim)$p.value >= 0.1
+
+```
+#Testing for Homogeneity of Variances
+```{r}
+bartlett.test(list(tredecula, tredecassini, tredecim))$p.value >= 0.1
+```
+#Conducting One-Way ANOVA
+```{r}
+
+anova_result <- aov(c(tredecula, tredecassini, tredecim) ~ rep(c("tredecula", "tredecassini", "tredecim"), each = 9))
+summary(anova_result, alpha = 0.1)
+
+```
+
+
+Analyzing Relationship Between Smoking and Age Using Chi-Square Test
+#Creating and Displaying Data Set
+```{r}
+age <- c("20-30", "30-40", "40-50", "50-60")
+smoke_yes <- c(4, 10, 14, 5)
+smoke_no <- c(6, 18, 20, 10)
+
+data <- data.frame(age, smoke_yes, smoke_no)
+colnames(data) <- c("Age", "Smoke Yes", "Smoke No")
+
+print(data)
+
+
+```
+#Conducting Chi-Square Test for Independence
+```{r}
+result <- chisq.test(data[, 2:3])
+p_value <- result$p.value
+
+if (p_value <= 0.1) {
+  print("The group (smoke and non-smoke) and the Age range effects are dependent.")
+} else {
+  print("The group (smoke and non-smoke) and the Age range effects are independent.")
+}
+```
+#Exploring Expected Values
+```{r}
+expected_values <- result$expected
+print(expected_values)
+
+```
+
+
